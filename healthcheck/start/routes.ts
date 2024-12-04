@@ -16,4 +16,4 @@ router.get('/', async () => {
   }
 })
 
-router.get('/healthcheck', [HealthchecksController, 'index'])
+router.get('/health', [HealthchecksController, 'index'])
