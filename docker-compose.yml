@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -21,15 +21,15 @@ services:
     build:
       context: ./healthcheck
     ports:
-      - ${PORT}:${PORT}
+      - 3333:3333
       - 9229:9229
     env_file:
       - .env
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_USER=adonis
-      - DB_PASSWORD=adonis
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
       - DB_DATABASE=adonis_app
     volumes:
       - ./:/home/node/app
