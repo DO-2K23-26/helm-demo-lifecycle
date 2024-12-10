@@ -7,11 +7,11 @@ replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: nginx # replace by beep image
+  repository: ghcr.io/do-2k23-26/helm-demo-lifecycle
   # This sets the pull policy for images.
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: latest
   # Pre-install migration command
   migrationCommand: ["node", "ace", "migration:run"]
 
@@ -34,18 +34,16 @@ serviceAccount:
   name: ""
 
 # This is for setting Kubernetes Annotations to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/ 
 podAnnotations: {}
 # This is for setting Kubernetes Labels to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
 
-podSecurityContext:
-  {}
+podSecurityContext: {}
   # fsGroup: 2000
 
-securityContext:
-  {}
+securityContext: {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -64,8 +62,7 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations:
-    {}
+  annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -78,8 +75,7 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources:
-  {}
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -93,18 +89,26 @@ resources:
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
-  httpGet:
-    path: /health
-    port: http
   exec:
     command:
-      - node
-      - ace
-      - migration:status
+      - /bin/sh
+      - -c
+      - >
+        curl -s http://localhost:8080/health | grep '"status":"ok"' || exit 1
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  failureThreshold: 1
+
 readinessProbe:
-  httpGet:
-    path: /health
-    port: http
+  exec:
+    command:
+      - /bin/sh
+      - -c
+      - >
+        curl -s http://localhost:8080/health | grep '"status":"ok"' || exit 1
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  failureThreshold: 1
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
