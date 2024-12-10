@@ -101,12 +101,6 @@ livenessProbe:
       - node
       - ace
       - migration:status
-startupProbe:
-  httpGet:
-    path: /health
-    port: http
-  failureThreshold: 30
-  periodSeconds: 10
 readinessProbe:
   httpGet:
     path: /health
