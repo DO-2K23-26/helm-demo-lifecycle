@@ -38,7 +38,7 @@ spec:
             - name: LOG_LEVEL
               value: {{ .Values.api.logLevel | quote }}
             - name: DB_HOST
-              value: {{ printf "%s-db" .Release.Name | quote }}
+              value: {{ printf "%s-postgresql" .Release.Name | quote }}
             - name: DB_PORT
               value: '5432'
             - name: DB_USER
