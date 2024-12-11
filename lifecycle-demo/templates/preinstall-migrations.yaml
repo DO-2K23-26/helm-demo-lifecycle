@@ -1,19 +1,18 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: '{{ .Release.Name }}'
+  name: '{{ .Release.Name }}-preinstall-migrations'
   labels:
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     helm.sh/chart: '{{ .Chart.Name }}-{{ .Chart.Version }}'
   annotations:
-    # This is what defines this resource as a hook. Without this line, the
-    # job is considered part of the release.
-    'helm.sh/hook': pre-install
-    'helm.sh/hook-weight': '-5'
+    'helm.sh/hook': post-install
+    'helm.sh/hook-weight': '20'
     'helm.sh/hook-delete-policy': hook-succeeded
 spec:
+  backoffLimit: 3
   template:
     metadata:
       name: '{{ .Release.Name }}'
@@ -30,7 +29,10 @@ spec:
             - name: PORT
               value: {{ .Values.service.port | quote }}
             - name: APP_KEY
-              value: {{ randAlphaNum 32 | quote }} # TODO: Maybe change to the real key
+              valueFrom:
+                secretKeyRef:
+                  name: demo-app-key
+                  key: APP_KEY
             - name: HOST
               value: '0.0.0.0'
             - name: LOG_LEVEL

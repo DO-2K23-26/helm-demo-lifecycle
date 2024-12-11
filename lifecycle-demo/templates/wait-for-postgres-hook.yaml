@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: '{{ .Release.Name }}-wait-for-postgres'
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: '{{ .Chart.Name }}-{{ .Chart.Version }}'
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      name: '{{ .Release.Name }}'
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: '{{ .Chart.Name }}-{{ .Chart.Version }}'
+    spec:
+      containers:
+        - name: wait-for-postgres
+          image: busybox:1.35
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Waiting for PostgreSQL readiness...";
+              until nc -z {{ printf "%s-postgresql" .Release.Name }} 5432; do
+                echo "PostgreSQL is not ready. Retrying...";
+                sleep 5;
+              done;
+              echo "PostgreSQL is ready!";
+      restartPolicy: Never

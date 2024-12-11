@@ -143,9 +143,10 @@ tolerations: []
 affinity: {}
 
 postgresql:
+  enabled: true
   auth:
     username: adonis
-    password: caca_au_sucre
+    password: cake_au_sucre
     database: helm_demo
 
 api:

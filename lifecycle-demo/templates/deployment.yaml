@@ -27,9 +27,22 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "lifecycle-demo.serviceAccountName" . }}
+      serviceAccountName: {{ .Release.Name }}-serviceaccount
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: wait-for-migrations
+          image: bitnami/kubectl:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Waiting for migrations to complete...";
+              while ! kubectl get job "{{ .Release.Name }}-migrations" -o jsonpath='{.status.succeeded}' | grep -q '1'; do
+                echo "Migrations not complete. Retrying in 5s...";
+                sleep 5;
+              done;
+              echo "Migrations complete!";
+
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
